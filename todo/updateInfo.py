@@ -2,6 +2,7 @@ import json
 import time
 import logging
 import boto3
+from todo import decimalencoder
 
 dynamodb = boto3.resource('dynamodb')
 
@@ -19,10 +20,10 @@ def update(event,context):
         Key={
             'id':event['pathParameters']['id']
         },
-        # ExpressionAttributeNames={
-        #     '#info_text': 'text',
-        # },
-        UpdateExpression= "SET text = :t, checked = :c, updateAt = :u",
+        ExpressionAttributeNames={
+            '#info_text': 'text',
+        },
+        UpdateExpression= "set #info_text = :t, checked = :c, updateAt = :u",
         ExpressionAttributeValues={
             ':t': data['text'],
             ':c': data['checked'],
@@ -34,5 +35,7 @@ def update(event,context):
     )
     response = {
         "statusCode":200,
-        "body": json.dumps(result['Attributes'])
+        "body": json.dumps(result['Attributes'], cls=decimalencoder.DecimalEncoder)
     }
+
+    return response
